@@ -7508,7 +7508,8 @@ class Client extends events_1.EventEmitter {
                     let usedItems = new Set();
                     let currentItems = new Array();
                     let currentSession = null;
-                    queryTask = query.query(queryURL, searchvalue, currentSession, maxamount).then((resultsession) => {
+                    queryTask = query.query(queryURL, searchvalue, currentSession, maxamount);
+                    queryTask.then((resultsession) => {
                         let resultObject = {
                             "session": resultsession,
                             "items": currentItems,
@@ -7541,7 +7542,7 @@ class Client extends events_1.EventEmitter {
                     allitems: this.allItems.size
                 });
             });
-            return [query, queryTask];
+            return [query, queryTask, newQueryResponse];
         });
     }
     handleEmitData(query, data, shaclpath, searchValue, collectionId) {
@@ -9816,7 +9817,7 @@ class Query extends events_1.EventEmitter {
                 }
             }
             yield Promise.all(runningQueries);
-            if (session === null) {
+            if (session === null || session === undefined) {
                 session = {};
                 session.nodes = [];
             }
@@ -27530,7 +27531,7 @@ async function main() {
   interruptButton.addEventListener('click', function(click){ clearAllQueries() }, false)
 
   let resetchartsbutton = document.getElementById("resetcharts");
-  resetchartsbutton.addEventListener('click', function(click){ resetCharts() }, false)
+  resetchartsbutton.addEventListener('click', function(click){ resetDrawings() }, false)
   
   
   // Create map and center.
@@ -27625,7 +27626,7 @@ async function main() {
       var userWKT = wkt.write();
 
       // Execute location query with the rectangle;
-      queryLocation(userWKT)
+      queryLocation(userWKT, currentFragmentSize)
     } else if (e.layerType == "marker") {
       console.log("Not yet implemented")
       // Execute nearest neighbor query;
@@ -27757,7 +27758,9 @@ var currentMunicipality = null;
 
 async function queryAutocompletionStreet(treetype, fragmentsize, searchValue){
   currentStreet = null
-  if (searchValue === "") return
+  if (searchValue === "") {
+    resetDrawings(); return;
+  }
   prepareForNewQuery(searchValue)
   querytype = treetype === "prefix" ? treeBrowser.PrefixQuery : treeBrowser.BTreePrefixQuery
   let streetsURI = 'http://193.190.127.164/streetdata/'+treetype+'/'+fragmentsize+'/node0.jsonld#Collection'
@@ -27766,7 +27769,9 @@ async function queryAutocompletionStreet(treetype, fragmentsize, searchValue){
 }
 async function queryAutocompletionMunicipality(treetype, fragmentsize, searchValue){
   currentMunicipality = null
-  if (searchValue === "") return
+  if (searchValue === "") {
+    resetDrawings(); return;
+  }
   prepareForNewQuery(searchValue)
   querytype = treetype === "prefix" ? treeBrowser.PrefixQuery : treeBrowser.BTreePrefixQuery
   let streetsURI = 'http://193.190.127.164/gemeentedata/'+treetype+"/"+fragmentsize+'/node0.jsonld#Collection'
@@ -27774,24 +27779,23 @@ async function queryAutocompletionMunicipality(treetype, fragmentsize, searchVal
   acClient.query(searchValue.trim(), querytype, propertypath, streetsURI, requestedSubjects)
 }
 async function queryHouseNumber(searchValue){
-  if (searchValue === "") return
+  if (searchValue === "") {return}
   if (currentStreet === null || currentStreet === undefined) { console.log("No street currently selected.") }
   prepareForNewQuery(searchValue)
   let collectionId = getIdOrValue(currentStreet["http://example.com#adreslist"])
   let propertypath = ["https://data.vlaanderen.be/ns/adres#huisnummer"];
   acClient.query(searchValue.trim(), treeBrowser.BTreePrefixQuery, propertypath, collectionId, requestedSubjects)
 }
-async function queryLocation(searchValue){
+async function queryLocation(searchValue, fragmentsize){
   prepareForNewQuery("location")
   drawWKT(searchValue, "green")
-  let locationtreeURI = 'http://193.190.127.164/locationdata'+currentFragmentSize+'/node0.jsonld#Collection'
+  let locationtreeURI = 'http://193.190.127.164/locationdata'+fragmentsize+'/node0.jsonld#Collection'
   let propertypath = ["https://data.vlaanderen.be/ns/adres#positie", "http://www.opengis.net/ont/geosparql#asWKT"]
   wktCLient.query(searchValue, treeBrowser.WKTStringQuery, propertypath, locationtreeURI, requestedSubjects)
 }
 
 function prepareForNewQuery(searchValue){
   clearAllQueries()
-  
   currentIndex += 1;
   currentSearchValue = currentIndex.toString() + ":" + searchValue
   addPlotBand(currentOffset)
@@ -27970,17 +27974,20 @@ function setCurrentStreet(street){
   console.log("current street", street)
   currentStreet = street;
   document.getElementById("streetInput").value = getIdOrValue(street["http://www.w3.org/2000/01/rdf-schema#label"])
+  updateResults()
   clearSideBarItems()
 }
 function setCurrentMunicipality(municipality){
   console.log("current municipality", municipality)
   currentMunicipality = municipality;
   document.getElementById("municipalityInput").value = getIdOrValue(municipality["http://www.w3.org/2000/01/rdf-schema#label"])
+  updateResults()
   clearSideBarItems()
 }
 function zoomInOnAddress(address){
   let addressWKT = terraformer_parser.parse(getIdOrValue(address["https://data.vlaanderen.be/ns/adres#positie"]["http://www.opengis.net/ont/geosparql#asWKT"]))
   map.setView([addressWKT.coordinates[1], addressWKT.coordinates[0]], 20);
+  updateResults()
 }
 
 
@@ -27998,15 +28005,17 @@ function clearAllQueries(){
 }
 
 function interruptAllQueries(){
-  // bandwidthHistory.push(totalBandwidth)
-  // updateBandwidthGraph(bandwidthHistory)
-  if (currentResponseTimings.length !== 0 && currentOffset.index !== currentIndex){
+  updateResults()
+  wktCLient.interrupt()
+  acClient.interrupt()
+}
+
+function updateResults(){
+  if (currentResponseTimings.length !== 0 && currentOffset.index < currentIndex){
     let newOffsetTime = currentResponseTimings[currentResponseTimings.length-1] + currentOffset.time
     updateResultsGraph(currentResponseTimings, currentOffset.time, currentIndex, currentSearchValue)
     currentOffset = {index: currentIndex, time: newOffsetTime}
   }
-  wktCLient.interrupt()
-  acClient.interrupt()
 }
 
 
@@ -28082,6 +28091,12 @@ function clearDrawn(){
 function clearAll() {
   clearDrawn()
   clearSideBarItems();
+}
+
+function resetDrawings(){
+  currentIndex = 0;
+  currentOffset = {index: 0, time: 0};
+  resetCharts()
 }
 
 

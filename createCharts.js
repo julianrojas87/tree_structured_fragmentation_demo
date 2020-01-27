@@ -57,6 +57,7 @@ async function createResultsGraph(resultsList){
     
 }
 
+
 var lastresultsupdate = [];
 async function updateResultsGraph(resultsList, currentOffset, currentIndex, currentSearchValue){
     if (! drawable){return}
