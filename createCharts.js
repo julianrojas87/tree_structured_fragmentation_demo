@@ -119,4 +119,5 @@ function resetCharts(){
     currentResponseTimings = []
     
     createResultsGraph([])
+    currentIndex = 0;
 }
