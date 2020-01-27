@@ -60,8 +60,6 @@ async function createResultsGraph(resultsList){
 var lastresultsupdate = [];
 async function updateResultsGraph(resultsList, currentOffset, currentIndex, currentSearchValue){
     if (! drawable){return}
-
-    console.log("RESULTS", resultsList)
     let newResultsList = []
     
     for (let i = 0; i < resultsList.length; i++){
@@ -94,9 +92,7 @@ async function addPlotBand(offsetObject){
 
 
 async function addPlotBandhit(offsetObject, time){
-    console.log("BANDHIT")
     if (! drawable){return}
-    console.log("HERE", offsetObject, offsetObject.time+time)
     resultsgraph.xAxis[0].addPlotBand({
         color: 'lightpink', // Color value
         from: offsetObject.time+time, // Start of the plot band
@@ -106,9 +102,7 @@ async function addPlotBandhit(offsetObject, time){
 }
 
 async function addPlotBandmiss(offsetObject, time){
-    console.log("BANDMISS")
     if (! drawable){return}
-    console.log("HERE", offsetObject, offsetObject.time+time)
     resultsgraph.xAxis[0].addPlotBand({
         color: 'lightblue', // Color value
         from: offsetObject.time+time, // Start of the plot band
@@ -125,5 +119,4 @@ function resetCharts(){
     currentResponseTimings = []
     
     createResultsGraph([])
-    clearDrawn()
 }

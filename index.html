@@ -132,6 +132,7 @@
         }
 
         function w3_open_right() {
+            console.log("opening")
             document.getElementById("mySidebarright").style.display = "block";
             // let controls = document.getElementsByClassName("leaflet-right")
             // for (let control of controls){
@@ -140,6 +141,7 @@
             drawable = true;
         }
         function w3_close_right() {
+            console.log("closing")
             resetCharts();
             console.log("closing")
             document.getElementById("mySidebarright").style.display = "none";

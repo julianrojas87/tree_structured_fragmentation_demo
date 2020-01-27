@@ -27735,8 +27735,8 @@ async function main() {
 
 
 
-  w3_close_right()
-  w3_open_right()
+  // w3_close_right()
+  // w3_open_right()
   // createTest()
   // createBandwidthGraph(bandwidthHistory)
   createResultsGraph([])
