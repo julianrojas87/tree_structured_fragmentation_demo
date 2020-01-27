@@ -94,7 +94,7 @@ async function addPlotBand(offsetObject){
 async function addPlotBandhit(offsetObject, time){
     if (! drawable){return}
     resultsgraph.xAxis[0].addPlotBand({
-        color: 'lightpink', // Color value
+        color: 'lightgreen', // Color value
         from: offsetObject.time+time, // Start of the plot band
         to: offsetObject.time+time + 1 //
     })
@@ -104,7 +104,7 @@ async function addPlotBandhit(offsetObject, time){
 async function addPlotBandmiss(offsetObject, time){
     if (! drawable){return}
     resultsgraph.xAxis[0].addPlotBand({
-        color: 'lightblue', // Color value
+        color: 'lightpink', // Color value
         from: offsetObject.time+time, // Start of the plot band
         to: offsetObject.time+time + 1 //
     })
