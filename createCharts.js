@@ -1,8 +1,10 @@
+var drawable = true;
+
 var resultsgraph = null;
 async function createResultsGraph(resultsList){
     resultsgraph = Highcharts.chart('resultscontainer', {
-
         chart: {
+            zoomType: 'x'
         },
 
         title: {
@@ -57,6 +59,7 @@ async function createResultsGraph(resultsList){
 
 var lastresultsupdate = [];
 async function updateResultsGraph(resultsList, currentOffset, currentIndex, currentSearchValue){
+    if (! drawable){return}
 
     console.log("RESULTS", resultsList)
     let newResultsList = []
@@ -78,12 +81,38 @@ async function updateResultsGraph(resultsList, currentOffset, currentIndex, curr
     // resultsgraph.redraw()
 }
 
-function addPlotBand(offsetObject){
+async function addPlotBand(offsetObject){
+    if (! drawable){return}
     console.log(offsetObject)
     resultsgraph.xAxis[0].addPlotBand({
-        color: 'gray', // Color value
+        color: 'black', // Color value
         from: offsetObject.time, // Start of the plot band
         to: offsetObject.time + 1 //
+    })
+    
+}
+
+
+async function addPlotBandhit(offsetObject, time){
+    console.log("BANDHIT")
+    if (! drawable){return}
+    console.log("HERE", offsetObject, offsetObject.time+time)
+    resultsgraph.xAxis[0].addPlotBand({
+        color: 'lightpink', // Color value
+        from: offsetObject.time+time, // Start of the plot band
+        to: offsetObject.time+time + 1 //
+    })
+    
+}
+
+async function addPlotBandmiss(offsetObject, time){
+    console.log("BANDMISS")
+    if (! drawable){return}
+    console.log("HERE", offsetObject, offsetObject.time+time)
+    resultsgraph.xAxis[0].addPlotBand({
+        color: 'lightblue', // Color value
+        from: offsetObject.time+time, // Start of the plot band
+        to: offsetObject.time+time + 1 //
     })
     
 }
@@ -96,112 +125,5 @@ function resetCharts(){
     currentResponseTimings = []
     
     createResultsGraph([])
+    clearDrawn()
 }
-
-// var bandwidthgraph = null
-// async function updateBandwidthGraph(newdata){
-//     bandwidthgraph.series.data = newdata
-//     bandwidthgraph.redraw()
-// }
-
-
-// async function createBandwidthGraph(){
-//   bandwidthgraph = Highcharts.chart('bandwidthfigurecontainer', {
-
-//     title: {
-//         text: 'Used Bandwidth'
-//     },
-
-//     yAxis: {
-//         title: {
-//             text: 'Bandwidth (kB)'
-//         }
-//     },
-
-//     xAxis: {
-//         accessibility: {
-//             rangeDescription: "Executed Query"
-//         }
-//     },
-
-//     legend: {
-//         layout: 'vertical',
-//         align: 'right',
-//         verticalAlign: 'middle'
-//     },
-
-//     plotOptions: {
-//         series: {
-//             label: {
-//                 connectorAllowed: false
-//             },
-//         }
-//     },
-
-//     series: [{
-//         name: 'Bandwidth',
-//         data: []
-//     }],
-
-//     responsive: {
-//         rules: [{
-//             condition: {
-//                 maxWidth: 500
-//             },
-//             chartOptions: {
-//                 legend: {
-//                     layout: 'horizontal',
-//                     align: 'center',
-//                     verticalAlign: 'bottom'
-//                 }
-//             }
-//         }]
-//     }
-
-//   });
-
-// }
-
-// function createResultsGraph(dataArray){
-
-// Highcharts.chart('resultscontainer', {
-//     title: {
-//         text: 'Timing of results'
-//     },
-
-//     xAxis: [{
-//         title: { text: 'Timing (ms)' },
-//         alignTicks: false
-//     }],
-
-//     series: [{
-//             name: 'Histogram',
-//             type: 'histogram',
-//             xAxis: 1,
-//             yAxis: 1,
-//             baseSeries: dataArray,
-//             zIndex: -1
-//         }
-//     ]
-//     });
-
-// }
-
-// function updateGraphs(){
-//   createBandwidthGraph()
-// }
-
-function isEqual(a, b) 
-{ 
-  // if length is not equal 
-  if(a.length!=b.length) 
-   return "False"; 
-  else
-  { 
-  // comapring each element of array 
-   for(var i=0;i<a.length;i++) 
-   if(a[i]!=b[i]) 
-    return "False"; 
-  } 
-  return "True"; 
-} 

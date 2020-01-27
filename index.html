@@ -122,6 +122,7 @@
 
     </div>
     <script>
+        
         function w3_open() {
             document.getElementById("mySidebar").style.display = "block";
         }
@@ -136,10 +137,13 @@
             // for (let control of controls){
             //     control.style["right"] = "400px";
             // }
+            drawable = true;
         }
         function w3_close_right() {
+            resetCharts();
             console.log("closing")
             document.getElementById("mySidebarright").style.display = "none";
+            drawable = false;
             // let controls = document.getElementsByClassName("leaflet-right")
             // for (let control of controls){
             //     control.style["right"] = "0px";
