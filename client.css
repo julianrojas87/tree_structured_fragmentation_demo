@@ -282,10 +282,10 @@ input:checked + .slider:before {
 }
 
 path.leaflet-interactive {
-  outline: 1px solid !important;
   fill: none;
-  stroke: #646464;
-  stroke-width: 5px;
+  stroke: #525252;
+  stroke-opacity:0.6;
+  stroke-width: 1px;
   stroke-dasharray: 2,2;
   stroke-linejoin: round;
 }
