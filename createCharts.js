@@ -86,7 +86,7 @@ async function addPlotBand(offsetObject){
     if (! drawable){return}
     console.log(offsetObject)
     resultsgraph.xAxis[0].addPlotBand({
-        color: 'rgba(0,0,0,0.65)', // Color value
+        color: 'rgba(0,0,0,1)', // Color value
         from: offsetObject.time, // Start of the plot band
         to: offsetObject.time + 1 //
     })
