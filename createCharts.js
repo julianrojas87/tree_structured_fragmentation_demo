@@ -59,6 +59,7 @@ async function createResultsGraph(resultsList){
 
 
 var lastresultsupdate = [];
+colors = ['rgba(20,100,0,1)', 'rgba(0,0,255,1)', 'rgba(255,85,0,1)', 'rgba(0,125,255,1)', 'rgba(165,0,255,1)', 'rgba(100,40,0,1)']
 async function updateResultsGraph(resultsList, currentOffset, currentIndex, currentSearchValue){
     if (! drawable){return}
     let newResultsList = []
@@ -72,7 +73,8 @@ async function updateResultsGraph(resultsList, currentOffset, currentIndex, curr
     resultsgraph.addSeries( {
         id: currentIndex,
         name: currentSearchValue,
-        data: newResultsList
+        data: newResultsList,
+        color: colors[currentIndex%colors.length], // Color value
     }, true)
     
     
@@ -84,7 +86,7 @@ async function addPlotBand(offsetObject){
     if (! drawable){return}
     console.log(offsetObject)
     resultsgraph.xAxis[0].addPlotBand({
-        color: 'black', // Color value
+        color: 'rgba(0,0,0,0.65)', // Color value
         from: offsetObject.time, // Start of the plot band
         to: offsetObject.time + 1 //
     })
@@ -95,21 +97,20 @@ async function addPlotBand(offsetObject){
 async function addPlotBandhit(offsetObject, time){
     if (! drawable){return}
     resultsgraph.xAxis[0].addPlotBand({
-        color: 'lightgreen', // Color value
+        color: 'rgba(50,255,0,0.25)', // Color value
         from: offsetObject.time+time, // Start of the plot band
         to: offsetObject.time+time + 1 //
-    })
+    }, true)
     
 }
 
 async function addPlotBandmiss(offsetObject, time){
     if (! drawable){return}
     resultsgraph.xAxis[0].addPlotBand({
-        color: 'lightpink', // Color value
+        color: 'rgba(255,50,0,0.25)', // Color value
         from: offsetObject.time+time, // Start of the plot band
         to: offsetObject.time+time + 1 //
-    })
-    
+    }, true)
 }
 
 function resetCharts(){
