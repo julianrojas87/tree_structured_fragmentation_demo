@@ -1,10 +1,10 @@
 .searchcontainer {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  height: 50vh;
-  width: 50vw;
+  margin-top: 4vh;
+  margin-bottom: 4vh;
+  height: 90vh;
+  margin-left: 4vw;
+  margin-right: 4vw;
+  widows: 90vw;
   border: 1px solid gray;
   box-shadow: 2px 2px 1px lightgray
 }​
@@ -14,7 +14,7 @@
 }
 
 #autocomplete{
-  height: 5vh;
+  height: 10vh;
 }
 
 
@@ -27,12 +27,12 @@
 	background-color: #fff;
 	border: thin solid #ccc;
 	padding: 10px;
-  font-size: 3vh;
+  font-size: 7vh;
 }
 
 #autocomplete-items{
   background-color: white;
-  height: 45vh;
+  height: 80vh;
   overflow: auto;
 }
 
@@ -43,11 +43,11 @@
 
 
 .sidebarItem {
-  padding: 2px;
+  padding: 4px;
   border-top: 1px solid black;
   border-bottom: 1px solid black;
-  height: 5vh;
-  font-size: 2vh;
+  height: 10vh;
+  font-size: 4vh;
 }
 .sidebarItemTitle {
   padding: 0;
