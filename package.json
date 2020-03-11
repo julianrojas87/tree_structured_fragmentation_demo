@@ -1,0 +1,21 @@
+{
+  "name": "masterthesisdemo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "browser-process-hrtime": "^1.0.0",
+    "chroma-js": "^2.1.0",
+    "terraformer-wkt-parser": "^1.2.1",
+    "treebrowser": "file:../treeBrowser",
+    "webpack": "^4.41.6"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.3.11"
+  }
+}
