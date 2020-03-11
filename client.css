@@ -1,48 +1,72 @@
-#map { 
-  height: 100%;
+.searchcontainer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 50vh;
+  width: 50vw;
+  border: 1px solid gray;
+  box-shadow: 2px 2px 1px lightgray
+}​
+
+#searchbar{
+  height: 100px;
+}
+
+#autocomplete{
+  height: 5vh;
+}
+
+
+#bar{
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box; 
   width: 100%;
-  position: fixed;
-  z-index: 100;
-  top: 0;
-}
-
-#searchInput{
-    margin: 4px;
-    width: 192px;
-}
-
-#mySidebar {
-  padding: 15px;
-}
-
-.w3-bar-item {
-    padding: 0;
+  height: 100%;
+	background-color: #fff;
+	border: thin solid #ccc;
+	padding: 10px;
+  font-size: 3vh;
 }
 
 #autocomplete-items{
-  overflow-y: scroll; 
-  height:40vh;
+  background-color: white;
+  height: 45vh;
+  overflow: auto;
 }
+
+#autocomplete-items::-webkit-scrollbar { width: 0 !important }
+#autocomplete-items { overflow: -moz-scrollbars-none; }
+#autocomplete-items { -ms-overflow-style: none; }
+
+
+
 .sidebarItem {
-    border: 1px solid black;
-    min-height: 50px;
+  padding: 2px;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  height: 5vh;
+  font-size: 2vh;
 }
 .sidebarItemTitle {
-    padding: 0;
-    margin: 0;
-    word-wrap:break-word;
+  padding: 0;
+  margin: 0;
+  word-wrap:break-word;
 }
 .sidebarItemP {
-    padding: 0;
-    margin: 0;
-    word-wrap:break-word;
+  padding: 0;
+  margin: 0;
+  word-wrap:break-word;
 }
 
 .sidebarItem:hover {
-    background-color: lightskyblue !important; 
+  background-color: lightskyblue !important; 
 }
 
 .autocomplete-items div {
+display: inline-block;
+width: 100%;
 padding: 10px;
 cursor: pointer;
 background-color: #fff; 
@@ -58,241 +82,9 @@ background-color: DodgerBlue !important;
 color: #ffffff; 
 }
 
-/* sliders */
 
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
+iframe {
   display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-  
-/* Hide default HTML checkbox */
-.switch input {display:none;}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-#leftopen {
-  margin:15px;
-  position:fixed;
-  left:0px;
-  top:0px;
-}
-#rightopen {
-  margin:15px;
-  float: right;
-  position:fixed;
-  right:0px;
-  bottom:0px;
-  background-color: white;
-}
-
-body {
-  height: 100vh;
-  overflow: auto;
-}
-
-
-#streetInput {
-  margin-bottom: 30px;
-}
-
-.leaflet-right .leaflet-top {
-  top: 80px !important;
-  right: 15px !important;
-}
-
-
-#mySidebarright{
-  padding: 15px;
-  right: 0;
   height: 100%;
-  width: 200px;
-  background-color: #fff;
-  position: relative!important;
-  z-index: 1;
-  overflow: auto;
-  bottom: 0px;
-
-}
-
-#closesidebarbuttonright{
-  display: inline-block !important;
-}
- 
-.loadercontainer {
-  padding-top: 3px;
-  padding-right: 15px;
-  float: right;
-}
-
-.bigslider {
-  position: relative;
-  -webkit-appearance: none;
-  width: 95%;
-  height: 15px;
-  border-radius: 5px;  
-  background: #d3d3d3;
-  outline: none;
-  opacity: 0.7;
-  -webkit-transition: .2s;
-  transition: opacity .2s;
-}
-
-.bigslider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%; 
-  background: #4CAF50;
-  cursor: pointer;
-}
-
-.bigslider::-moz-range-thumb {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  background: #4CAF50;
-  cursor: pointer;
-}
-
-/*switch*/
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 16px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: green;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 12px;
-  width: 12px;
-  left: 6px;
-  bottom: 2px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(36px);
-  -ms-transform: translateX(36px);
-  transform: translateX(36px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-.treetogglestyle{
-  display: inline-block;
-  margin: 5px;
-  top: 0;
-  margin-top: 0;
-}
-.togglecontainerinner{
-  display: inline-block;
-  position: relative;
-  top: 3px;
-  
-}
-
-path.leaflet-interactive {
-  fill: none;
-  stroke: #525252;
-  stroke-opacity:0.6;
-  stroke-width: 1px;
-  stroke-dasharray: 2,2;
-  stroke-linejoin: round;
-}
-
-.buttoncontainerrighttop{
-  display: inline-block;
-  float: right;
-  height: 30vh;
-  width: 5vw;
+  width: 100%;
 }
