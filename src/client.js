@@ -37,7 +37,7 @@ function prepareForNewQuery(searchValue){
 }
 
 async function createCard(item){
-  let tripleString = "<a href=\""+item.streetName['id'] + "\" target=\"_blank\" title=\"" + item.streetName['http://www.w3.org/2000/01/rdf-schema#label'] + "\">streetname:" + item.streetName['id'].split('/').pop() + "</a> was attributed by <a href=\""+ item.municipalityName['id'] + "\" target=\"_blank\" title=\"" + item.municipalityName['http://www.w3.org/2000/01/rdf-schema#label'] + "\">municipality:" + item.municipalityName['id'].split('/').pop() + "</a>.";
+  let tripleString = "<a href=\""+item.streetName['id'] + "\" target=\"_blank\" title=\"" + item.streetName['http://www.w3.org/2000/01/rdf-schema#label'] + "\">streetname:" + item.streetName['id'].split('/').pop() + "</a> <abbr title=\"prov:wasAttributedTo\">in</abbr> <a href=\""+ item.municipalityName['id'] + "\" target=\"_blank\" title=\"" + item.municipalityName['http://www.w3.org/2000/01/rdf-schema#label'] + "\">municipality:" + item.municipalityName['id'].split('/').pop() + "</a>.";
   
   let cardTitle = item.streetName['http://www.w3.org/2000/01/rdf-schema#label'] + " <span class=\"municipality-name\">" + item.municipalityName['http://www.w3.org/2000/01/rdf-schema#label'] + "</span>"
   addSideBarItem(cardTitle, tripleString, item, function(id) { window.open(id) })
