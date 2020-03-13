@@ -8,13 +8,20 @@
     <script src="index.js" charset="utf-8"></script>
 </head>
 <body>
-    <div class="searchcontainer"> 
-        <div id="searchbar"></div>
-        <div id="autocomplete">
-            <input class="w3-bar-item" rows="1" id="bar" placeholder="Type a streetname here" autocomplete="off"></input>
-        </div>
-        <div id="autocomplete-items"></div>
+    <div class="pagecontainer">
+        <div class="searchcontainer"> 
+            <div id="searchbar"></div>
+            <div id="autocomplete">
+                <input class="w3-bar-item" rows="1" id="bar" placeholder="Type a streetname here" autocomplete="off"></input>
+            </div>
+            <div id="autocomplete-items"></div>
 
+        </div>
+        <div class="cachemissescontainer">
+            <div class="cachedisplay">Total requests counter: </div>
+            <div class="cachedisplay" id="requestcounter">0</div>
+            <div class="cachedisplay">Cache miss counter: </div>
+            <div class="cachedisplay" id="cachemisses">0</div>
         </div>
     </div>
 

@@ -1,6 +1,8 @@
 const treeBrowser = require("rdf_tree_browser")
-let currentFragmentSize = 25;
+let requiredResults = 10;
 var currentautocompletiontype = "btree"
+let cacheMisses = 0;
+let totalRequests = 0;
 
 
 let acClient = new treeBrowser.AutocompleteClient(false)
@@ -8,6 +10,9 @@ let acClient = new treeBrowser.AutocompleteClient(false)
 window.onload = function() {main()}
 
 async function main() {
+  let cacheCountDisplay = document.getElementById('cachemisses')
+  let requestCounterDisplay = document.getElementById('requestcounter')
+  acClient.on('client-cache-miss', (e) => {cacheMisses += 1; cacheCountDisplay.innerHTML = cacheMisses})
 
   acClient.on("data", (data) => {
     let dataEntities = parseData(data)
@@ -18,6 +23,8 @@ async function main() {
 
   autocomplete(document.getElementById("bar"));
   document.getElementById("bar").addEventListener("input", async function(e) {
+    totalRequests += 1;
+    requestCounterDisplay.innerHTML = totalRequests
     queryAutocompletion(e.target.value);
   });
 }
@@ -25,11 +32,11 @@ async function main() {
 var currentDisplayedItems = []
 
 async function queryAutocompletion(searchValue){
-  if (searchValue === "") return;
+  if (searchValue === "") { clearAllQueries(); return; }
   prepareForNewQuery(searchValue)
   let streetsURI = 'http://193.190.127.164/minidemostreetdata/25/node0.jsonld#Collection'
   let propertypath = ["http://www.w3.org/2000/01/rdf-schema#label"];
-  acClient.query(searchValue.trim(), treeBrowser.BTreePrefixQuery, propertypath, streetsURI, 25)
+  acClient.query(searchValue.trim(), treeBrowser.BTreePrefixQuery, propertypath, streetsURI, requiredResults)
 }
 
 function prepareForNewQuery(searchValue){

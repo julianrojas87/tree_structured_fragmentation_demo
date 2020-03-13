@@ -1,12 +1,19 @@
-.searchcontainer {
+.pagecontainer {
   margin-top: 4vh;
   margin-bottom: 4vh;
   height: 90vh;
   margin-left: 4vw;
   margin-right: 4vw;
-  widows: 90vw;
+  width: 90vw;
   border: 1px solid gray;
-  box-shadow: 2px 2px 1px lightgray
+  box-shadow: 2px 2px 1px lightgray;
+  background-color: lightgray;
+}
+
+.searchcontainer {
+  height: 80vh;
+  border: 1px solid gray;
+  background-color: white;
 }​
 
 #searchbar{
@@ -32,7 +39,7 @@
 
 #autocomplete-items{
   background-color: white;
-  height: 80vh;
+  height: 70vh;
   overflow: auto;
 }
 
@@ -95,4 +102,19 @@ iframe {
   display: inline-block;
   height: 100%;
   width: 100%;
+}
+
+p {
+  display: inline-block;
+}
+
+
+
+.cachemissescontainer {
+  height: 10vh;
+}
+
+.cachedisplay {
+  display: inline-block;
+  width: 20%;
 }
