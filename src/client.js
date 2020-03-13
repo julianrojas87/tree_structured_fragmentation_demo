@@ -37,15 +37,13 @@ function prepareForNewQuery(searchValue){
 }
 
 async function createCard(item){
-  // These key value pairs display in the card
-  let keyValuePairs = new Map();
-  keyValuePairs.set('street id:', item.streetName['id']);
-  keyValuePairs.set('municipality id:', item.municipality['id']);
-  let cardTitle = item.streetName['http://www.w3.org/2000/01/rdf-schema#label'] + " : " + item.municipalityName['http://www.w3.org/2000/01/rdf-schema#label']
-  addSideBarItem(cardTitle, keyValuePairs, item, function(id) { window.open(id) })
+  let tripleString = "<a href=\""+item.streetName['id'] + "\" target=\"_blank\" title=\"" + item.streetName['http://www.w3.org/2000/01/rdf-schema#label'] + "\">streetname:" + item.streetName['id'].split('/').pop() + "</a> was attributed by <a href=\""+ item.municipalityName['id'] + "\" target=\"_blank\" title=\"" + item.municipalityName['http://www.w3.org/2000/01/rdf-schema#label'] + "\">municipality:" + item.municipalityName['id'].split('/').pop() + "</a>.";
+  
+  let cardTitle = item.streetName['http://www.w3.org/2000/01/rdf-schema#label'] + " <span class=\"municipality-name\">" + item.municipalityName['http://www.w3.org/2000/01/rdf-schema#label'] + "</span>"
+  addSideBarItem(cardTitle, tripleString, item, function(id) { window.open(id) })
 }
 
-async function addSideBarItem(title, keyValPairs, item, onclickfct = null, lat = null, long = null) {
+async function addSideBarItem(title, triple, item, onclickfct = null, lat = null, long = null) {
   let id = item.streetName["id"]
   if (currentDisplayedItems.length >= 25) {
     interruptAllQueries()
@@ -60,23 +58,14 @@ async function addSideBarItem(title, keyValPairs, item, onclickfct = null, lat =
   let sidebarItemTitle = document.createElement("h5");
   sidebarItem.className = "sidebarItem";
   sidebarItemTitle.className = "sidebarItemTitle";
-  sidebarItemTitle.innerHTML = title
+  sidebarItemTitle.innerHTML = title;
   sidebarItem.appendChild(sidebarItemTitle);
 
-  for (var entry of keyValPairs) {
-    if (Array.isArray(entry[1]) && entry[1].length === 1) { entry[1] = entry[1][0] } 
-    if (entry[1] !== Object(entry[1]) && !Array.isArray(entry[1])){
-      let sidebarItemP = document.createElement("p");
-      sidebarItemP.className = "sidebarItemP";
-      sidebarItemP.innerHTML = entry[0] + ": " + entry[1]
-      sidebarItem.appendChild(sidebarItemP);
-      if (entry[1].startsWith('http') && !entry[1].match(/straatnaam/)) { sidebarItemP.onclick = function(){onclickfct(entry[1])} }
-    }
-  }
-
-  if (onclickfct !== null){
-    sidebarItem.onclick = function(){onclickfct(id)}
-  }   
+  let sidebarItemP = document.createElement("p");
+  sidebarItemP.className = "sidebarItemP";
+  sidebarItemP.innerHTML = triple;
+  sidebarItem.appendChild(sidebarItemP);
+  
 
   sidebarContainer.appendChild(sidebarItem);
 
