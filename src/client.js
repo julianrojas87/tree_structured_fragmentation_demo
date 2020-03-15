@@ -3,6 +3,7 @@ let requiredResults = 10;
 var currentautocompletiontype = "btree"
 let cacheMisses = 0;
 let totalRequests = 0;
+let individualRequests = new Set();
 
 
 let acClient = new treeBrowser.AutocompleteClient(false)
@@ -12,6 +13,7 @@ window.onload = function() {main()}
 async function main() {
   let cacheCountDisplay = document.getElementById('cachemisses')
   let requestCounterDisplay = document.getElementById('requestcounter')
+  let individualCounterDisplay = document.getElementById('individualrequestscounter')
   acClient.on('client-cache-miss', (e) => {cacheMisses += 1; cacheCountDisplay.innerHTML = cacheMisses})
 
   acClient.on("data", (data) => {
@@ -23,9 +25,13 @@ async function main() {
 
   autocomplete(document.getElementById("bar"));
   document.getElementById("bar").addEventListener("input", async function(e) {
+    let searchValue = e.target.value
+    if (searchValue === "") { clearAllQueries(); return; }
     totalRequests += 1;
     requestCounterDisplay.innerHTML = totalRequests
-    queryAutocompletion(e.target.value);
+    individualRequests.add(searchValue)
+    individualCounterDisplay.innerHTML = individualRequests.size
+    queryAutocompletion(searchValue);
   });
 }
 
