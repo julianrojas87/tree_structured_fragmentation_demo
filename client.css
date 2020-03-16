@@ -113,28 +113,29 @@ p {
 .cachemissescontainer {
   height: 9vh;
   margin: auto;
+  width: 85%;
 }
 
 .centerdiv {
   display: block;
   height: 9vh;
-  width: 33vw;
+  font-weight: bold;
   margin: auto;
   white-space: nowrap;
 }
 
 .cachedisplay {
   height: 100%;
-  font-size: 7vh;
+  width: 5%;
+  font-size: 5vh;
   display: inline-block;
-  width: 4vw;
   text-align: center;
   margin: auto;
 }
 
 .cachedicon {
-  width: 2vw;
+  width: 20%;
 }
 .cacheseparator {
-  width: 6vw;
+  width: 5%;
 }
