@@ -113,7 +113,7 @@ p {
 .cachemissescontainer {
   height: 9vh;
   margin: auto;
-  width: 85%;
+  width: 84%;
 }
 
 .centerdiv {
@@ -126,8 +126,8 @@ p {
 
 .cachedisplay {
   height: 100%;
-  width: 5%;
-  font-size: 5vh;
+  width: 3%;
+  font-size: 2vw;
   display: inline-block;
   text-align: center;
   margin: auto;
@@ -137,5 +137,5 @@ p {
   width: 20%;
 }
 .cacheseparator {
-  width: 5%;
+  width: 7.5%;
 }
