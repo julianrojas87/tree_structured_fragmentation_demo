@@ -11,7 +11,7 @@
 }
 
 .searchcontainer {
-  height: 80vh;
+  height: 83vh;
   border: 1px solid gray;
   background-color: white;
 }​
@@ -39,7 +39,7 @@
 
 #autocomplete-items{
   background-color: white;
-  height: 70vh;
+  height: 73vh;
   overflow: auto;
 }
 
@@ -54,7 +54,7 @@
   border-top: 1px solid black;
   border-bottom: 1px solid black;
   height: 10vh;
-  font-size: 2.5vh;
+  font-size: 2.3vh;
 }
 .sidebarItemTitle {
   font-size: 1.5em;
@@ -111,31 +111,34 @@ p {
 
 
 .cachemissescontainer {
-  height: 9vh;
-  margin: auto;
-  width: 84%;
+  height: 6.88vh;
+  width: 100%;
 }
 
 .centerdiv {
-  display: block;
-  height: 9vh;
+  display: table;
+  height: 100%;
+  line-height: 6vh;
   font-weight: bold;
   margin: auto;
+  width: auto;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .cachedisplay {
-  height: 100%;
-  width: 3%;
-  font-size: 2vw;
-  display: inline-block;
+  font-size: 2.5vw;
   text-align: center;
   margin: auto;
+  display: inline;
 }
 
 .cachedicon {
-  width: 20%;
+  width: auto;
+  margin-right: 0.8vw;
 }
 .cacheseparator {
-  width: 7.5%;
+  margin-left: 2.6vw;
+  margin-right: 2.6vw;
+
 }
