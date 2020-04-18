@@ -26273,9 +26273,9 @@ async function createCard(item) {
   const geoName = item.entity['http://www.geonames.org/ontology#name'];
 
   let tripleString = `${codeName}
-                      — <a href="https://www.openstreetmap.org/#map=14/${item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat']}/${item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long']}" target="_blank">See in OpenStreetMap</a>`;
+                      — <a href="https://www.openstreetmap.org/?mlat=${item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat']}&mlon=${item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long']}" target="_blank">See in OpenStreetMap</a>`;
   
-  let cardTitle = `<a href="${item.entity['id']}">${geoName}</a>`;
+  let cardTitle = `<a href="${item.entity['id']}" target="_blank">${geoName}</a>`;
   addSideBarItem(cardTitle, tripleString, item, function (id) { window.open(id) })
 }
 
