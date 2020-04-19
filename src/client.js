@@ -1,9 +1,15 @@
 const treeBrowser = require("rdf_tree_browser");
 const ldfetch = require('ldfetch');
 const N3 = require('n3');
+const Swal = require('sweetalert2');
+const wktParser = require('wellknown');
+const bbox = require('@turf/bbox').default;
+var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
+mapboxgl.accessToken = 'pk.eyJ1IjoianVsaWFucm9qYXM4NyIsImEiOiJjazk2YTdmNDIwMHc2M2Vtamt1cHRwaDBrIn0.gSdLyC_7GdyVWle6QnAvbg';
 
 var acClient = new treeBrowser.AutocompleteClient(false);
 var quadStore = new N3.Store();
+
 
 window.onload = function () {
   main();
@@ -47,26 +53,25 @@ async function createCard(item) {
   const codeName = getLabel(item.entity);
   const geoName = item.entity['http://www.geonames.org/ontology#name'];
 
-  let tripleString = `${codeName}
-                      — <a href="https://www.openstreetmap.org/?mlat=${item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat']}&mlon=${item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long']}" target="_blank">See in OpenStreetMap</a>`;
-  
-  let cardTitle = `<a href="${item.entity['id']}" target="_blank">${geoName}</a>`;
+  let tripleString = codeName;
+  let cardTitle = geoName;
+
   addSideBarItem(cardTitle, tripleString, item, function (id) { window.open(id) })
 }
 
 function getLabel(entity) {
-  for(q of quadStore.getQuads(entity['http://www.geonames.org/ontology#featureCode'], 'http://www.w3.org/2004/02/skos/core#prefLabel')) {
-    if(q.object.language === 'en') {
+  for (q of quadStore.getQuads(entity['http://www.geonames.org/ontology#featureCode'], 'http://www.w3.org/2004/02/skos/core#prefLabel')) {
+    if (q.object.language === 'en') {
       return q.object.value;
     }
   }
 }
 
-async function addSideBarItem(title, triple, item, onclickfct = null, lat = null, long = null) {
+async function addSideBarItem(title, type, item, onclickfct = null, lat = null, long = null) {
   let id = item.entity["id"]
   if (currentDisplayedItems.length >= 25) {
-    interruptAllQueries()
-    return
+    interruptAllQueries();
+    return;
   }
   if (currentDisplayedItems.indexOf(id) !== -1) { return }
 
@@ -82,12 +87,74 @@ async function addSideBarItem(title, triple, item, onclickfct = null, lat = null
 
   let sidebarItemP = document.createElement("p");
   sidebarItemP.className = "sidebarItemP";
-  sidebarItemP.innerHTML = triple;
+  sidebarItemP.innerHTML = type;
   sidebarItem.appendChild(sidebarItemP);
 
+  sidebarItem.addEventListener('click', () => {
+
+    Swal.fire({
+      title: `<strong><a href="${id}" target="_blank">${title}</a></strong>`,
+      html: `<div style="height: inherit" id="map_${id}"></div>`,
+      showCloseButton: true,
+      showConfirmButton: false
+    });
+
+    const lat = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat'];
+    const lon = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long'];
+
+    let map = new mapboxgl.Map({
+      container: `map_${id}`,
+      style: 'mapbox://styles/mapbox/light-v10',
+      center: [lon, lat],
+      zoom: 15
+    });
+    map.addControl(new mapboxgl.NavigationControl());
+
+    var popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+      <strong>Id:</strong> <a href="${id}" target="_blank">${id}</a>
+      <strong>Name: </strong><span>${title}</span><br/>
+      <strong>Type: </strong><span>${type}</span><br/>
+      <strong>Latitude: </strong><span>${lat}</span><br/>
+      <strong>Longitude: </strong><span>${lon}</span>
+
+    `);
+
+    new mapboxgl.Marker()
+      .setLngLat([lon, lat])
+      .setPopup(popup)
+      .addTo(map);
+
+    const wkt = item.entity['http://www.opengis.net/ont/geosparql#asWKT'];
+
+    if (wkt.includes('POLYGON')) {
+      const geojson = wktParser(wkt);
+      const bb = bbox(geojson);
+
+      map.on('load', function () {
+        map.addSource('polyS', {
+          'type': 'geojson',
+          'data': {
+            'type': 'Feature',
+            'geometry': geojson
+          }
+        });
+        map.addLayer({
+          'id': 'polyL',
+          'type': 'fill',
+          'source': 'polyS',
+          'layout': {},
+          'paint': {
+            'fill-color': '#088',
+            'fill-opacity': 0.8
+          }
+        });
+        map.fitBounds(bb, { padding: 20 });
+      });
+    }
+
+  });
 
   sidebarContainer.appendChild(sidebarItem);
-
 }
 
 function clearSideBarItems() {

@@ -7,40 +7,47 @@
   widows: 90vw;
   border: 1px solid gray;
   box-shadow: 2px 2px 1px lightgray
-}​
+}
 
-#searchbar{
+​ #searchbar {
   height: 100px;
 }
 
-#autocomplete{
+#autocomplete {
   height: 10vh;
 }
 
-
-#bar{
-  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
-	box-sizing: border-box; 
+#bar {
+  -webkit-box-sizing: border-box;
+  /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;
+  /* Firefox, other Gecko */
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
-	background-color: #fff;
-	border: thin solid #ccc;
-	padding: 10px;
+  background-color: #fff;
+  border: thin solid #ccc;
+  padding: 10px;
   font-size: 7vh;
 }
 
-#autocomplete-items{
+#autocomplete-items {
   background-color: white;
   height: 80vh;
   overflow: auto;
 }
 
-#autocomplete-items::-webkit-scrollbar { width: 0 !important }
-#autocomplete-items { overflow: -moz-scrollbars-none; }
-#autocomplete-items { -ms-overflow-style: none; }
+#autocomplete-items::-webkit-scrollbar {
+  width: 0 !important
+}
 
+#autocomplete-items {
+  overflow: -moz-scrollbars-none;
+}
 
+#autocomplete-items {
+  -ms-overflow-style: none;
+}
 
 .sidebarItem {
   padding: 4px;
@@ -49,50 +56,72 @@
   height: 10vh;
   font-size: 1.2em;
 }
+
 .sidebarItemTitle {
   font-size: 1.5em;
   padding: 0;
   margin: 0;
-  word-wrap:break-word;
+  word-wrap: break-word;
 }
+
 .municipality-name {
-    font-size: 0.7em;
+  font-size: 0.7em;
 }
+
 .municipality-name::before {
-    content: " in "
-    
+  content: " in "
 }
+
 .sidebarItemP {
   padding: 0;
   margin: 0;
-  word-wrap:break-word;
+  word-wrap: break-word;
 }
 
 .sidebarItem:hover {
-  background-color: lightskyblue !important; 
+  background-color: lightskyblue !important;
 }
 
 .autocomplete-items div {
-display: inline-block;
-width: 100%;
-padding: 10px;
-cursor: pointer;
-background-color: #fff; 
-border-bottom: 1px solid #d4d4d4; 
-}
-.autocomplete-items div:hover {
-/*when hovering an item:*/
-background-color: #e9e9e9; 
-}
-.autocomplete-active {
-/*when navigating through the items using the arrow keys:*/
-background-color: DodgerBlue !important; 
-color: #ffffff; 
+  display: inline-block;
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
 }
 
+.autocomplete-items div:hover {
+  /*when hovering an item:*/
+  background-color: #e9e9e9;
+}
+
+.autocomplete-active {
+  /*when navigating through the items using the arrow keys:*/
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}
 
 iframe {
   display: inline-block;
   height: 100%;
   width: 100%;
+}
+
+.swal2-popup {
+  justify-content: start !important;
+  width: 650px !important;
+  height: 500px !important;
+}
+
+.swal2-content {
+  height: 460px !important;
+}
+
+#swal2-content {
+  height: 400px !important;
+}
+
+.mapboxgl-marker {
+  cursor: pointer;
 }
