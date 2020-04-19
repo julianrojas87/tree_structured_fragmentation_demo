@@ -55,6 +55,7 @@
   border-bottom: 1px solid black;
   height: 10vh;
   font-size: 1.2em;
+  cursor: pointer;
 }
 
 .sidebarItemTitle {
