@@ -26224,6 +26224,7 @@ return new Parser;
 /***/ (function(module, exports, __webpack_require__) {
 
 const treeBrowser = __webpack_require__(63);
+const normalize = treeBrowser.Normalizer.normalize;
 const ldfetch = __webpack_require__(39);
 const N3 = __webpack_require__(25);
 const Swal = __webpack_require__(145);
@@ -26247,8 +26248,8 @@ async function main() {
   const quads = (await fetcher.get('http://193.190.127.152/geonames/ontology.rdf')).triples;
   quadStore.addQuads(quads);
 
-  acClient.on("data", (data) => {
-    let dataEntities = parseData(data)
+  acClient.on("data", data => {
+    let dataEntities = parseData(data);
     for (let entity of dataEntities) {
       createCard(entity)
     }
@@ -26295,8 +26296,10 @@ function getLabel(entity) {
 async function addSideBarItem(title, type, item, onclickfct = null, lat = null, long = null) {
   let id = item.entity["id"]
   if (currentDisplayedItems.length >= 25) {
-    interruptAllQueries();
-    return;
+    // Only accept exact matches if we have more than 25 elements
+    if (normalize(title) !== normalize(item.query)) {
+      return;
+    }
   }
   if (currentDisplayedItems.indexOf(id) !== -1) { return }
 
@@ -26379,7 +26382,19 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
 
   });
 
-  sidebarContainer.appendChild(sidebarItem);
+  // Insert exact matches at the beginning 
+  if (sidebarContainer.childNodes.length > 0) {
+    if (normalize(title) === normalize(item.query)) {
+      sidebarContainer.insertBefore(sidebarItem, sidebarContainer.childNodes[0]);
+      if (sidebarContainer.childNodes.length > 25) {
+        sidebarContainer.lastElementChild.remove();
+      }
+    } else {
+      sidebarContainer.appendChild(sidebarItem);
+    }
+  } else {
+    sidebarContainer.appendChild(sidebarItem);
+  }
 }
 
 function clearSideBarItems() {
@@ -26501,7 +26516,7 @@ function parseData(data) {
       currentState = currentState && currentState[predicate] ? currentState[predicate] : null
     }
     if (treeBrowser.Normalizer.normalize(currentState).startsWith(treeBrowser.Normalizer.normalize(searchValue))) {
-      dataEntities.push({ entity: entity })
+      dataEntities.push({ entity: entity, query: searchValue })
     }
   }
   return dataEntities

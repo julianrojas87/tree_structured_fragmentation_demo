@@ -1,4 +1,5 @@
 const treeBrowser = require("rdf_tree_browser");
+const normalize = treeBrowser.Normalizer.normalize;
 const ldfetch = require('ldfetch');
 const N3 = require('n3');
 const Swal = require('sweetalert2');
@@ -22,8 +23,8 @@ async function main() {
   const quads = (await fetcher.get('http://193.190.127.152/geonames/ontology.rdf')).triples;
   quadStore.addQuads(quads);
 
-  acClient.on("data", (data) => {
-    let dataEntities = parseData(data)
+  acClient.on("data", data => {
+    let dataEntities = parseData(data);
     for (let entity of dataEntities) {
       createCard(entity)
     }
@@ -70,8 +71,10 @@ function getLabel(entity) {
 async function addSideBarItem(title, type, item, onclickfct = null, lat = null, long = null) {
   let id = item.entity["id"]
   if (currentDisplayedItems.length >= 25) {
-    interruptAllQueries();
-    return;
+    // Only accept exact matches if we have more than 25 elements
+    if (normalize(title) !== normalize(item.query)) {
+      return;
+    }
   }
   if (currentDisplayedItems.indexOf(id) !== -1) { return }
 
@@ -154,7 +157,19 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
 
   });
 
-  sidebarContainer.appendChild(sidebarItem);
+  // Insert exact matches at the beginning 
+  if (sidebarContainer.childNodes.length > 0) {
+    if (normalize(title) === normalize(item.query)) {
+      sidebarContainer.insertBefore(sidebarItem, sidebarContainer.childNodes[0]);
+      if (sidebarContainer.childNodes.length > 25) {
+        sidebarContainer.lastElementChild.remove();
+      }
+    } else {
+      sidebarContainer.appendChild(sidebarItem);
+    }
+  } else {
+    sidebarContainer.appendChild(sidebarItem);
+  }
 }
 
 function clearSideBarItems() {
@@ -276,7 +291,7 @@ function parseData(data) {
       currentState = currentState && currentState[predicate] ? currentState[predicate] : null
     }
     if (treeBrowser.Normalizer.normalize(currentState).startsWith(treeBrowser.Normalizer.normalize(searchValue))) {
-      dataEntities.push({ entity: entity })
+      dataEntities.push({ entity: entity, query: searchValue })
     }
   }
   return dataEntities
