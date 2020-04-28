@@ -26245,7 +26245,7 @@ async function main() {
 
   // Load GeoNames ontology
   const fetcher = new ldfetch();
-  const quads = (await fetcher.get('http://193.190.127.152/geonames/ontology.rdf')).triples;
+  const quads = (await fetcher.get('http://n076-12.wall1.ilabt.iminds.be/geonames/ontology.rdf')).triples;
   quadStore.addQuads(quads);
 
   acClient.on("data", data => {
@@ -26266,7 +26266,7 @@ var currentDisplayedItems = []
 async function queryAutocompletion(searchValue) {
   if (searchValue === "") return;
   prepareForNewQuery(searchValue)
-  let collection = 'http://193.190.127.152/geonames/node0.jsonld#Collection'
+  let collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames/node0.jsonld#Collection'
   let propertypath = ["http://www.geonames.org/ontology#name"];
   acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, propertypath, collection, 25)
 }
