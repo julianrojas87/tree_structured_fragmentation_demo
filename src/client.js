@@ -10,6 +10,8 @@ mapboxgl.accessToken = 'pk.eyJ1IjoianVsaWFucm9qYXM4NyIsImEiOiJjazk2YTdmNDIwMHc2M
 
 var acClient = new treeBrowser.AutocompleteClient(false);
 var quadStore = new N3.Store();
+var propertyPath = "http://www.geonames.org/ontology#name";
+var sv = null;
 
 
 window.onload = function () {
@@ -32,6 +34,7 @@ async function main() {
 
   autocomplete(document.getElementById("bar"));
   document.getElementById("bar").addEventListener("input", async function (e) {
+    sv = e.target.value;
     queryAutocompletion(e.target.value);
   });
 }
@@ -41,9 +44,8 @@ var currentDisplayedItems = []
 async function queryAutocompletion(searchValue) {
   if (searchValue === "") return;
   prepareForNewQuery(searchValue)
-  let collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames/node0.jsonld#Collection'
-  let propertypath = ["http://www.geonames.org/ontology#name"];
-  acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, propertypath, collection, 25)
+  let collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames-tree/node0.jsonld#Collection'
+  acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, [propertyPath], collection, 25)
 }
 
 function prepareForNewQuery(searchValue) {
@@ -52,7 +54,7 @@ function prepareForNewQuery(searchValue) {
 
 async function createCard(item) {
   const codeName = getLabel(item.entity);
-  const geoName = item.entity['http://www.geonames.org/ontology#name'];
+  const geoName = item.entity[propertyPath];
 
   let tripleString = codeName;
   let cardTitle = geoName;
@@ -268,9 +270,9 @@ function getIdOrValue(object) {
 function parseData(data) {
   let idmap = new Map()
   let typeMap = new Map();
-  let shaclpath = data.shaclpath
-  let searchValue = data.searchValue
-  let quads = data.data
+  let shaclpath = [propertyPath]
+  let searchValue = sv;
+  let quads = data.quads
 
   for (let quad of quads) {
     let subject = quad.subject.value, predicate = quad.predicate.value, object = quad.object.value
