@@ -38,15 +38,33 @@ async function queryAutocompletion(searchValue) {
   if (searchValue === "") return;
   prepareForNewQuery(searchValue);
 
-  const collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames-prefix-tree/node0.jsonld#Collection'
-  acClient = new treeBrowser.AutocompleteClient(false);
-  acClient.on("data", data => {
-    let dataEntities = parseData(data);
-    for (let entity of dataEntities) {
+  const collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames-suffix-tree/node0.jsonld#Collection';
+  let arr = [];
+  acClient = new treeBrowser.FuzzyAutocompleteClient(25);
+  acClient.on("topn", data => {
+    let filtered = [];
+    let set = new Set();
+
+    arr = arr.concat(parseData(data));
+    arr = arr.sort((a, b) => {
+      return b.score - a.score;
+    });
+
+    for (let i = 0; i < arr.length; i++) {
+      if (filtered.length >= 25) break;
+      if (!set.has(arr[i]['@id'])) {
+        set.add(arr[i]['@id']);
+        filtered.push(arr[i]);
+      }
+    }
+
+    clearSideBarItems();
+    for (let entity of filtered) {
       createCard(entity)
     }
   });
-  acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, [propertyPath], collection, 25)
+
+  acClient.query(searchValue.trim(), treeBrowser.SubstringQuery, [propertyPath], collection, 25)
 }
 
 function prepareForNewQuery(searchValue) {
@@ -54,13 +72,10 @@ function prepareForNewQuery(searchValue) {
 }
 
 async function createCard(item) {
-  const codeName = getLabel(item.entity);
-  const geoName = item.entity[propertyPath];
+  const codeName = getLabel(item);
+  const cardTitle = item[propertyPath];
 
-  let tripleString = codeName;
-  let cardTitle = geoName;
-
-  addSideBarItem(cardTitle, tripleString, item, function (id) { window.open(id) })
+  addSideBarItem(cardTitle, codeName, item, function (id) { window.open(id) })
 }
 
 function getLabel(entity) {
@@ -71,14 +86,8 @@ function getLabel(entity) {
   }
 }
 
-async function addSideBarItem(title, type, item, onclickfct = null, lat = null, long = null) {
-  let id = item.entity["id"]
-  if (currentDisplayedItems.length >= 25) {
-    // Only accept exact matches if we have more than 25 elements
-    if (normalize(title) !== normalize(item.query)) {
-      return;
-    }
-  }
+async function addSideBarItem(title, type, item) {
+  let id = item["@id"]
   if (currentDisplayedItems.indexOf(id) !== -1) { return }
 
   currentDisplayedItems.push(id)
@@ -91,10 +100,14 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
   sidebarItemTitle.innerHTML = title;
   sidebarItem.appendChild(sidebarItemTitle);
 
-  let sidebarItemP = document.createElement("p");
-  sidebarItemP.className = "sidebarItemP";
-  sidebarItemP.innerHTML = type;
-  sidebarItem.appendChild(sidebarItemP);
+  const lat = item['http://www.w3.org/2003/01/geo/wgs84_pos#lat'];
+  const lon = item['http://www.w3.org/2003/01/geo/wgs84_pos#long'];
+
+  let itemType = document.createElement("p");
+  itemType.className = "sidebarItemP";
+  itemType.innerHTML = `${type} - ${item['http://www.opengis.net/ont/geosparql#asWKT']} - Similarity: <strong>${Number(item.score).toFixed(3)}</strong>`;
+  sidebarItem.appendChild(itemType);
+
 
   sidebarItem.addEventListener('click', () => {
 
@@ -104,9 +117,6 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
       showCloseButton: true,
       showConfirmButton: false
     });
-
-    const lat = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat'];
-    const lon = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long'];
 
     let map = new mapboxgl.Map({
       container: `map_${id}`,
@@ -130,7 +140,7 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
       .setPopup(popup)
       .addTo(map);
 
-    const wkt = item.entity['http://www.opengis.net/ont/geosparql#asWKT'];
+    const wkt = item['http://www.opengis.net/ont/geosparql#asWKT'];
 
     if (wkt.includes('POLYGON')) {
       const geojson = wktParser(wkt);
@@ -160,19 +170,7 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
 
   });
 
-  // Insert exact matches at the beginning 
-  if (sidebarContainer.childNodes.length > 0) {
-    if (normalize(title) === normalize(item.query)) {
-      sidebarContainer.insertBefore(sidebarItem, sidebarContainer.childNodes[0]);
-      if (sidebarContainer.childNodes.length > 25) {
-        sidebarContainer.lastElementChild.remove();
-      }
-    } else {
-      sidebarContainer.appendChild(sidebarItem);
-    }
-  } else {
-    sidebarContainer.appendChild(sidebarItem);
-  }
+  sidebarContainer.appendChild(sidebarItem);
 }
 
 function clearSideBarItems() {
@@ -245,11 +243,12 @@ function autocomplete(inp, field) {
 }
 
 function clearAllQueries() {
+  interruptAllQueries();
   clearSideBarItems()
 }
 
 function interruptAllQueries() {
-  acClient.interrupt()
+  if (acClient) acClient.interrupt();
 }
 
 
@@ -267,34 +266,36 @@ function getIdOrValue(object) {
   return null
 }
 
-function parseData(data) {
-  let idmap = new Map()
-  let typeMap = new Map();
-  let shaclpath = [propertyPath]
-  let searchValue = sv;
-  let quads = data.quads
+function parseData(res) {
+  let entities = new Map();
+  let ids = [];
+  let results = [];
 
-  for (let quad of quads) {
-    let subject = quad.subject.value, predicate = quad.predicate.value, object = quad.object.value
-    idmap.has(subject) ? idmap.get(subject)[predicate] = object : idmap.set(subject, { "id": subject, [predicate]: object })
-    switch (predicate) {
-      case "http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
-        typeMap.has(object) ? typeMap.get(object).push(subject) : typeMap.set(object, [subject])
-        break;
+  for (const r of res) {
+    for (const quad of r.object.quads) {
+      const s = quad.subject.value;
+      const p = quad.predicate.value;
+      const o = quad.object.value;
+
+      if (p === propertyPath) {
+        ids.push(s);
+      }
+
+      if (entities.has(s)) {
+        entities.get(s)[p] = o;
+      } else {
+        entities.set(s, {
+          '@id': s,
+          [p]: o,
+          score: r.score
+        });
+      }
     }
   }
 
-  let dataEntities = []
-  for (let entityId of typeMap.get('http://www.geonames.org/ontology#Feature')) {
-    let entity = idmap.get(entityId)
-    // Test current entities
-    let currentState = entity;
-    for (let predicate of shaclpath) {
-      currentState = currentState && currentState[predicate] ? currentState[predicate] : null
-    }
-    if (treeBrowser.Normalizer.normalize(currentState).startsWith(treeBrowser.Normalizer.normalize(searchValue))) {
-      dataEntities.push({ entity: entity, query: searchValue })
-    }
+  for (const id of ids) {
+    results.push(entities.get(id));
   }
-  return dataEntities
+
+  return results;
 }
