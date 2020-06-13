@@ -71,7 +71,7 @@ function getLabel(entity) {
   }
 }
 
-async function addSideBarItem(title, type, item, onclickfct = null, lat = null, long = null) {
+async function addSideBarItem(title, type, item) {
   let id = item.entity["id"]
   if (currentDisplayedItems.length >= 25) {
     // Only accept exact matches if we have more than 25 elements
@@ -91,9 +91,12 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
   sidebarItemTitle.innerHTML = title;
   sidebarItem.appendChild(sidebarItemTitle);
 
+  const lat = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat'];
+  const lon = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long'];
+
   let sidebarItemP = document.createElement("p");
   sidebarItemP.className = "sidebarItemP";
-  sidebarItemP.innerHTML = type;
+  sidebarItemP.innerHTML = `${type} - ${item.entity['http://www.opengis.net/ont/geosparql#asWKT']}`;
   sidebarItem.appendChild(sidebarItemP);
 
   sidebarItem.addEventListener('click', () => {
@@ -104,9 +107,6 @@ async function addSideBarItem(title, type, item, onclickfct = null, lat = null, 
       showCloseButton: true,
       showConfirmButton: false
     });
-
-    const lat = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat'];
-    const lon = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long'];
 
     let map = new mapboxgl.Map({
       container: `map_${id}`,
