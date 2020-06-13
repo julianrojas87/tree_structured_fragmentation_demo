@@ -139,7 +139,7 @@ async function addSideBarItem(title, type, item) {
 
   let itemType = document.createElement("p");
   itemType.className = "sidebarItemP";
-  itemType.innerHTML = `${type} () - ${item['http://www.opengis.net/ont/geosparql#asWKT']} - Similarity: <strong>${Number(item.score).toFixed(3)}</strong>`;
+  itemType.innerHTML = `${type} - ${item['http://www.opengis.net/ont/geosparql#asWKT']} - Similarity: <strong>${Number(item.score).toFixed(3)}</strong>`;
   sidebarItem.appendChild(itemType);
 
 
