@@ -126,3 +126,11 @@ iframe {
 .mapboxgl-marker {
   cursor: pointer;
 }
+
+.loading {    
+  background-color: #ffffff;
+  background-image: url("http://loadinggif.com/images/image-selection/3.gif");
+  background-size: 50px 50px;
+  background-position: right center;
+  background-repeat: no-repeat;
+}

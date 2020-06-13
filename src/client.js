@@ -40,6 +40,7 @@ async function queryAutocompletion(searchValue) {
     treePath: propertyPath,
     query: searchValue
   });
+  document.getElementById('bar').classList.add('loading');
 
   let arr = [];
   worker.onmessage = e => {
@@ -60,6 +61,7 @@ async function queryAutocompletion(searchValue) {
     }
 
     clearSideBarItems();
+    document.getElementById('bar').classList.remove('loading');
     for (let entity of filtered) {
       createCard(entity)
     }
