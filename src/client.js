@@ -8,7 +8,7 @@ const bbox = require('@turf/bbox').default;
 var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 mapboxgl.accessToken = 'pk.eyJ1IjoianVsaWFucm9qYXM4NyIsImEiOiJjazk2YTdmNDIwMHc2M2Vtamt1cHRwaDBrIn0.gSdLyC_7GdyVWle6QnAvbg';
 
-var acClient = new treeBrowser.AutocompleteClient(false);
+var acClient = null;
 var quadStore = new N3.Store();
 var propertyPath = "http://www.geonames.org/ontology#name";
 var sv = null;
@@ -25,13 +25,6 @@ async function main() {
   const quads = (await fetcher.get('http://n076-12.wall1.ilabt.iminds.be/geonames/ontology.rdf')).triples;
   quadStore.addQuads(quads);
 
-  acClient.on("data", data => {
-    let dataEntities = parseData(data);
-    for (let entity of dataEntities) {
-      createCard(entity)
-    }
-  });
-
   autocomplete(document.getElementById("bar"));
   document.getElementById("bar").addEventListener("input", async function (e) {
     sv = e.target.value;
@@ -43,8 +36,16 @@ var currentDisplayedItems = []
 
 async function queryAutocompletion(searchValue) {
   if (searchValue === "") return;
-  prepareForNewQuery(searchValue)
-  let collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames-tree/node0.jsonld#Collection'
+  prepareForNewQuery(searchValue);
+
+  const collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames-prefix-tree/node0.jsonld#Collection'
+  acClient = new treeBrowser.AutocompleteClient(false);
+  acClient.on("data", data => {
+    let dataEntities = parseData(data);
+    for (let entity of dataEntities) {
+      createCard(entity)
+    }
+  });
   acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, [propertyPath], collection, 25)
 }
 
@@ -244,7 +245,6 @@ function autocomplete(inp, field) {
 }
 
 function clearAllQueries() {
-  interruptAllQueries()
   clearSideBarItems()
 }
 
