@@ -3,6 +3,17 @@ const path = require('path');
 
 module.exports = {
   entry: './src/client.js',
+  module: {
+    rules: [
+      {
+        test: /\.worker\.js$/,
+        use: { 
+          loader: 'worker-loader',
+          options: { inline: true, fallback: false }
+        }
+      }
+    ]
+  },
   output: {
     path: path.resolve(__dirname, './'),
     filename: 'index.js'

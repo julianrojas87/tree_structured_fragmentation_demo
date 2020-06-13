@@ -1,5 +1,4 @@
-const treeBrowser = require("rdf_tree_browser");
-const normalize = treeBrowser.Normalizer.normalize;
+import Worker from './query.worker';
 const ldfetch = require('ldfetch');
 const N3 = require('n3');
 const Swal = require('sweetalert2');
@@ -8,10 +7,10 @@ const bbox = require('@turf/bbox').default;
 var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 mapboxgl.accessToken = 'pk.eyJ1IjoianVsaWFucm9qYXM4NyIsImEiOiJjazk2YTdmNDIwMHc2M2Vtamt1cHRwaDBrIn0.gSdLyC_7GdyVWle6QnAvbg';
 
-var acClient = null;
+var worker = null;
 var quadStore = new N3.Store();
 var propertyPath = "http://www.geonames.org/ontology#name";
-var sv = null;
+var currentDisplayedItems = [];
 
 
 window.onload = function () {
@@ -27,25 +26,27 @@ async function main() {
 
   autocomplete(document.getElementById("bar"));
   document.getElementById("bar").addEventListener("input", async function (e) {
-    sv = e.target.value;
     queryAutocompletion(e.target.value);
   });
 }
 
-var currentDisplayedItems = []
-
 async function queryAutocompletion(searchValue) {
   if (searchValue === "") return;
-  prepareForNewQuery(searchValue);
+  prepareForNewQuery();
 
-  const collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames-suffix-tree/node0.jsonld#Collection';
+  worker = new Worker();
+  worker.postMessage({
+    collection: 'http://n076-12.wall1.ilabt.iminds.be/geonames-suffix-tree/node0.jsonld#Collection',
+    treePath: propertyPath,
+    query: searchValue
+  });
+
   let arr = [];
-  acClient = new treeBrowser.FuzzyAutocompleteClient(25);
-  acClient.on("topn", data => {
+  worker.onmessage = e => {
     let filtered = [];
     let set = new Set();
 
-    arr = arr.concat(parseData(data));
+    arr = arr.concat(parseData(e.data));
     arr = arr.sort((a, b) => {
       return b.score - a.score;
     });
@@ -62,25 +63,58 @@ async function queryAutocompletion(searchValue) {
     for (let entity of filtered) {
       createCard(entity)
     }
-  });
-
-  acClient.query(searchValue.trim(), treeBrowser.SubstringQuery, [propertyPath], collection, 25)
+  };
 }
 
-function prepareForNewQuery(searchValue) {
-  clearAllQueries();
+function prepareForNewQuery() {
+  if (worker) worker.terminate();
+  clearSideBarItems();
+}
+
+function parseData(res) {
+  let entities = new Map();
+  let ids = [];
+  let results = [];
+
+  for (const r of res) {
+    for (const quad of r.object.quads) {
+      const s = quad.subject.value;
+      const p = quad.predicate.value;
+      const o = quad.object.value;
+
+      if (p === propertyPath) {
+        ids.push(s);
+      }
+
+      if (entities.has(s)) {
+        entities.get(s)[p] = o;
+      } else {
+        entities.set(s, {
+          '@id': s,
+          [p]: o,
+          score: r.score
+        });
+      }
+    }
+  }
+
+  for (const id of ids) {
+    results.push(entities.get(id));
+  }
+
+  return results;
 }
 
 async function createCard(item) {
-  const codeName = getLabel(item);
+  const codeName = getLabel(item['http://www.geonames.org/ontology#featureCode'], 'http://www.w3.org/2004/02/skos/core#prefLabel', 'en');
   const cardTitle = item[propertyPath];
 
   addSideBarItem(cardTitle, codeName, item, function (id) { window.open(id) })
 }
 
-function getLabel(entity) {
-  for (q of quadStore.getQuads(entity['http://www.geonames.org/ontology#featureCode'], 'http://www.w3.org/2004/02/skos/core#prefLabel')) {
-    if (q.object.language === 'en') {
+function getLabel(s, p, lang) {
+  for (let q of quadStore.getQuads(s, p)) {
+    if (q.object.language === lang) {
       return q.object.value;
     }
   }
@@ -105,7 +139,7 @@ async function addSideBarItem(title, type, item) {
 
   let itemType = document.createElement("p");
   itemType.className = "sidebarItemP";
-  itemType.innerHTML = `${type} - ${item['http://www.opengis.net/ont/geosparql#asWKT']} - Similarity: <strong>${Number(item.score).toFixed(3)}</strong>`;
+  itemType.innerHTML = `${type} () - ${item['http://www.opengis.net/ont/geosparql#asWKT']} - Similarity: <strong>${Number(item.score).toFixed(3)}</strong>`;
   sidebarItem.appendChild(itemType);
 
 
@@ -176,8 +210,7 @@ async function addSideBarItem(title, type, item) {
 function clearSideBarItems() {
   currentDisplayedItems = []
   let sidebarContainer = document.getElementById("autocomplete-items")
-  sidebarContainer.innerHTML = ""
-  sidebarcount = 0;
+  sidebarContainer.innerHTML = "";
 }
 
 function autocomplete(inp, field) {
@@ -242,60 +275,3 @@ function autocomplete(inp, field) {
   });
 }
 
-function clearAllQueries() {
-  interruptAllQueries();
-  clearSideBarItems()
-}
-
-function interruptAllQueries() {
-  if (acClient) acClient.interrupt();
-}
-
-
-function getIdOrValue(object) {
-  if (Array.isArray(object) && object.length === 1) { return getIdOrValue(object[0]) }
-  if (object["value"] !== null && object["value"] !== undefined) {
-    return object["value"]
-  }
-  if (object["id"] !== null && object["id"] !== undefined) {
-    return object["id"]
-  }
-  if (object["@id"] !== null && object["@id"] !== undefined) {
-    return object["@id"]
-  }
-  return null
-}
-
-function parseData(res) {
-  let entities = new Map();
-  let ids = [];
-  let results = [];
-
-  for (const r of res) {
-    for (const quad of r.object.quads) {
-      const s = quad.subject.value;
-      const p = quad.predicate.value;
-      const o = quad.object.value;
-
-      if (p === propertyPath) {
-        ids.push(s);
-      }
-
-      if (entities.has(s)) {
-        entities.get(s)[p] = o;
-      } else {
-        entities.set(s, {
-          '@id': s,
-          [p]: o,
-          score: r.score
-        });
-      }
-    }
-  }
-
-  for (const id of ids) {
-    results.push(entities.get(id));
-  }
-
-  return results;
-}
