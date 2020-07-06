@@ -129,8 +129,27 @@ iframe {
 
 .loading {    
   background-color: #ffffff;
-  background-image: url("http://loadinggif.com/images/image-selection/3.gif");
-  background-size: 50px 50px;
+  background-image: url("https://media0.giphy.com/media/3oEjI6SIIHBdRxXI40/200.gif");
+  background-size: 150px 150px;
   background-position: right center;
   background-repeat: no-repeat;
+}
+
+.mapboxgl-popup {
+  max-width: 300px !important;
+}
+
+.osmSidebarSource {
+  position: relative;
+  float: right;
+  width: 150px;
+  bottom: 45px;
+  right: 90px;
+}
+
+.geonamesSidebarSource {
+  position: relative;
+  float: right;
+  width: 350px;
+  bottom: 50px;
 }

@@ -8,5 +8,7 @@ self.addEventListener('message', e => {
         self.postMessage(data);
     });
 
-    acClient.query(e.data.query.trim(), SubstringQuery, [e.data.treePath], e.data.collection, 25);
+    for (let i = 0; i < e.data.collections.length; i++) {
+        acClient.query(e.data.query.trim(), SubstringQuery, [e.data.treePaths[i]], e.data.collections[i], 25);
+    }
 });
