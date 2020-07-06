@@ -10,7 +10,8 @@ mapboxgl.accessToken = 'pk.eyJ1IjoianVsaWFucm9qYXM4NyIsImEiOiJjazk2YTdmNDIwMHc2M
 
 var acClient = null;
 var quadStore = new N3.Store();
-var propertyPath = "http://www.geonames.org/ontology#name";
+var osmPP = ["https://w3id.org/openstreetmap/terms#name"];
+var geonamesPP = ["http://www.geonames.org/ontology#name"];
 var sv = null;
 
 
@@ -20,10 +21,14 @@ window.onload = function () {
 
 async function main() {
 
-  // Load GeoNames ontology
+  // Load GeoNames and OSM ontologies
   const fetcher = new ldfetch();
-  const quads = (await fetcher.get('http://n076-12.wall1.ilabt.iminds.be/geonames/ontology.rdf')).triples;
-  quadStore.addQuads(quads);
+  const [osm, geonames] = await Promise.all([
+    fetcher.get('https://w3id.org/openstreetmap/terms'),
+    fetcher.get('http://193.190.127.152/geonames/ontology.rdf')
+  ]);
+  quadStore.addQuads(osm.triples);
+  quadStore.addQuads(geonames.triples);
 
   autocomplete(document.getElementById("bar"));
   document.getElementById("bar").addEventListener("input", async function (e) {
@@ -38,41 +43,83 @@ async function queryAutocompletion(searchValue) {
   if (searchValue === "") return;
   prepareForNewQuery(searchValue);
 
-  const collection = 'http://n076-12.wall1.ilabt.iminds.be/geonames-prefix-tree/node0.jsonld#Collection'
+  const geonamesTree = 'http://193.190.127.152/geonames-prefix-tree/node0.jsonld#Collection';
+  const osmTree = 'http://193.190.127.152/osm-prefix-tree/node0.jsonld#Collection'
+
+  if (acClient) acClient.interrupt();
   acClient = new treeBrowser.AutocompleteClient(false);
   acClient.on("data", data => {
-    let dataEntities = parseData(data);
+    data.jsonld.query = searchValue.trim();
+    createCard(data.jsonld);
+    /*let dataEntities = parseData(data);
     for (let entity of dataEntities) {
       createCard(entity)
-    }
+    }*/
   });
-  acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, [propertyPath], collection, 25)
+  acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, geonamesPP, geonamesTree, 25);
+  acClient.query(searchValue.trim(), treeBrowser.PrefixQuery, osmPP, osmTree, 25);
 }
 
-function prepareForNewQuery(searchValue) {
+function prepareForNewQuery() {
   clearAllQueries();
 }
 
 async function createCard(item) {
-  const codeName = getLabel(item.entity);
-  const geoName = item.entity[propertyPath];
+  let title = null;
+  let type = null;
+  let source = null;
 
-  let tripleString = codeName;
-  let cardTitle = geoName;
+  if(item['http://www.w3.org/1999/02/22-rdf-syntax-ns#type'][0].id.includes('openstreetmap')) {
+    title = item['https://w3id.org/openstreetmap/terms#name'][0].value;
+    type = getOSMLabel(item);
+    source = 'osm';
+  } else if(item['http://www.w3.org/1999/02/22-rdf-syntax-ns#type'][0].id.includes('geonames')) {
+    title = item['http://www.geonames.org/ontology#name'][0].value;
+    type = getGeonamesLabel(item['http://www.geonames.org/ontology#featureCode'][0].id);
+    source = 'geonames';
+  }
 
-  addSideBarItem(cardTitle, tripleString, item, function (id) { window.open(id) })
+  addSideBarItem(title, type, source, item);
 }
 
-function getLabel(entity) {
-  for (q of quadStore.getQuads(entity['http://www.geonames.org/ontology#featureCode'], 'http://www.w3.org/2004/02/skos/core#prefLabel')) {
+function getOSMLabel(entity) {
+  const base = 'https://w3id.org/openstreetmap/terms#'
+  if(entity[`${base}class`]) {
+    return `Class (${entity[`${base}class`][0].id.split('#')[1]})`;
+  }
+  if(entity[`${base}boundary`]) {
+    return `Boundary (${entity[`${base}boundary`][0].id.split('#')[1]})`;
+  }
+  if(entity[`${base}place`]) {
+    return `Place (${entity[`${base}place`][0].id.split('#')[1]})`;
+  }
+  if(entity[`${base}highway`]) {
+    return `Highway (${entity[`${base}highway`][0].id.split('#')[1]})`;
+  }
+  if(entity[`${base}waterway`]) {
+    return `Waterway (${entity[`${base}waterway`][0].id.split('#')[1]})`;
+  }
+  if(entity[`${base}multiple`]) {
+    return `Multiple (${entity[`${base}multiple`][0].id.split('#')[1]})`;
+  }
+  if(entity[`${base}natural`]) {
+    return `Natural (${entity[`${base}natural`][0].id.split('#')[1]})`;
+  }
+  if(entity[`${base}landuse`]) {
+    return `Land use (${entity[`${base}landuse`][0].id.split('#')[1]})`;
+  }
+}
+
+function getGeonamesLabel(featureCode) {
+  for (q of quadStore.getQuads(featureCode, 'http://www.w3.org/2004/02/skos/core#prefLabel')) {
     if (q.object.language === 'en') {
       return q.object.value;
     }
   }
 }
 
-async function addSideBarItem(title, type, item) {
-  let id = item.entity["id"]
+async function addSideBarItem(title, type, source, item) {
+  let id = item["id"];
   if (currentDisplayedItems.length >= 25) {
     // Only accept exact matches if we have more than 25 elements
     if (normalize(title) !== normalize(item.query)) {
@@ -91,13 +138,18 @@ async function addSideBarItem(title, type, item) {
   sidebarItemTitle.innerHTML = title;
   sidebarItem.appendChild(sidebarItemTitle);
 
-  const lat = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#lat'];
-  const lon = item.entity['http://www.w3.org/2003/01/geo/wgs84_pos#long'];
+  const lat = item['http://www.w3.org/2003/01/geo/wgs84_pos#lat'][0].value;
+  const lon = item['http://www.w3.org/2003/01/geo/wgs84_pos#long'][0].value;
 
   let sidebarItemP = document.createElement("p");
   sidebarItemP.className = "sidebarItemP";
-  sidebarItemP.innerHTML = `${type} - ${item.entity['http://www.opengis.net/ont/geosparql#asWKT']}`;
+  sidebarItemP.innerHTML = `${type} - ${item['http://www.opengis.net/ont/geosparql#asWKT'][0].value}`;
   sidebarItem.appendChild(sidebarItemP);
+
+  let sourceImage = document.createElement("img");
+  sourceImage.className = `${source}SidebarSource`;
+  sourceImage.src = `img/${source}_logo.png`;
+  sidebarItem.appendChild(sourceImage);
 
   sidebarItem.addEventListener('click', () => {
 
@@ -117,7 +169,7 @@ async function addSideBarItem(title, type, item) {
     map.addControl(new mapboxgl.NavigationControl());
 
     var popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-      <strong>Id:</strong> <a href="${id}" target="_blank">${id}</a>
+      <strong>Id:</strong> <a href="${id}" target="_blank">${id}</a><br/>
       <strong>Name: </strong><span>${title}</span><br/>
       <strong>Type: </strong><span>${type}</span><br/>
       <strong>Latitude: </strong><span>${lat}</span><br/>
@@ -130,7 +182,7 @@ async function addSideBarItem(title, type, item) {
       .setPopup(popup)
       .addTo(map);
 
-    const wkt = item.entity['http://www.opengis.net/ont/geosparql#asWKT'];
+    const wkt = item['http://www.opengis.net/ont/geosparql#asWKT'][0].value;
 
     if (wkt.includes('POLYGON')) {
       const geojson = wktParser(wkt);
@@ -270,7 +322,7 @@ function getIdOrValue(object) {
 function parseData(data) {
   let idmap = new Map()
   let typeMap = new Map();
-  let shaclpath = [propertyPath]
+  let shaclpath = propertyPath
   let searchValue = sv;
   let quads = data.quads
 
