@@ -24,7 +24,7 @@ async function main() {
   const fetcher = new ldfetch();
   const [osm, geonames] = await Promise.all([
     fetcher.get('https://w3id.org/openstreetmap/terms'),
-    fetcher.get('http://193.190.127.152/geonames/ontology.rdf')
+    fetcher.get('http://193.190.127.152/TREE/resources/geonames-ontology.rdf')
   ]);
   quadStore.addQuads(osm.triples);
   quadStore.addQuads(geonames.triples);
